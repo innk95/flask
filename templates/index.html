@@ -1,0 +1,79 @@
+<html>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}" />
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
+<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.js"></script>
+<script src="https://unpkg.com/vue/dist/vue.min.js"></script>
+  <head>
+
+  </head>
+  <body>
+  <div id="main">
+       <div v-if='load' class="lds-circle"><div></div></div>
+      <div class="row">
+          <div class="col-md-4"></div>
+          <div class="col-md-4" v-if="!load">
+              <div class="" id="my_form">
+                 <h3>Введите email или телефон</h3>
+                  <br>
+                  <input v-model="data" class="form-control">
+                  <br>
+                  <button class="btn btn-success" @click='check'>Проверить</button>
+                  <br>
+                  <br>
+                  <input v-if='message' class='form-control' type="text" v-model="message" readonly></div>
+              </div>
+          </div>
+          <div class="col-md-4"></div>
+      </div>
+
+
+  </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      new Vue({
+        el: '#main',
+        data: {
+            data: '',
+            load: false,
+            message: '',
+            class: ''
+
+        },
+        methods: {
+            check(){
+                this.message = '';
+                if(!this.data)
+                    return alert('Нет данных')
+                let ans = this.Valid(this.data)  //валидация email или phone
+                if(!ans) {
+                    alert('Неправильные данные')
+                    return false
+                }
+                this.load = true
+                let that = this;
+                $.ajax({
+                    type: "POST",
+                    url: '/submit',
+                    data: {value: this.data, type: ans},
+                    success: function(result){
+                        that.load = false;
+                        if (result == '1')
+                            that.message = 'Аккаунт зарегистрирован'
+                        else
+                            that.message = 'Аккаунт не зарегистрирован'
+                    }
+                });
+
+            },
+            Valid(data) {
+                let reMail = /^[\w-\.]+@[\w-]+\.[a-z]{2,4}$/i;
+                if(reMail.test(data)){return 'EM'}
+                if(data.length==11 && !isNaN(data)){return 'PH'}
+                return false
+            },
+        },
+      })
+    })
+  </script>
+  </body>
+</html>
